@@ -23,7 +23,8 @@ class BaseModel():
     def __str__(self):
         """ returns an informal representation of the instance """
 
-        return "[{}] ({}) {}".format(self.__class__.__name__, self.id, self.__dict__)
+        return "[{}] ({}) {}".format(
+            self.__class__.__name__, self.id, self.__dict__)
 
     def save(self):
         """ updates the updated_at attribute of the instance """

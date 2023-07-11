@@ -52,7 +52,8 @@ class TestBaseModel(unittest.TestCase):
         model.name = "John"
         model.age = 50
         m_dict = model.to_dict()
-        m_dict_keys = {"__class__", "id", "created_at", "updated_at", "name", "age"}
+        m_dict_keys = {
+            "__class__", "id", "created_at", "updated_at", "name", "age"}
         self.assertIsInstance(m_dict, dict)
         self.assertSetEqual(set(m_dict.keys()), m_dict_keys)
         self.assertIsInstance(m_dict["name"], str)
@@ -75,4 +76,7 @@ class TestBaseModel(unittest.TestCase):
         self.assertIn("'id': ", m_str)
         self.assertIn("'created_at': datetime.datetime", m_str)
         self.assertIn("'updated_at': datetime.datetime", m_str)
+        self.assertEqual(
+            f"[{model.__class__.__name__}] ({model.id}) {model.__dict__}\n",
+            m_str)
         sys.stdout = sys.__stdout__
