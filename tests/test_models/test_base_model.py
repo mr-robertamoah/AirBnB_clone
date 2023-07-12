@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
-"""
-Test module for base_model module
-"""
+""" Test module for base_model module """
 
 
 from models.base_model import BaseModel
@@ -24,8 +22,47 @@ class TestBaseModel(unittest.TestCase):
         self.assertIsInstance(model.created_at, datetime)
         self.assertIsInstance(model.updated_at, datetime)
 
-        with self.assertRaises(TypeError):
-            model = BaseModel("name")
+        model = BaseModel("name")
+        self.assertIsInstance(model, BaseModel)
+        self.assertIsInstance(model.id, str)
+        self.assertIsInstance(model.created_at, datetime)
+        self.assertIsInstance(model.updated_at, datetime)
+
+        model.name = "John"
+        model_dict = model.to_dict()
+        model1 = BaseModel(**model_dict)
+        self.assertIsInstance(model1, BaseModel)
+        self.assertIsInstance(model1.id, str)
+        self.assertIsInstance(model1.created_at, datetime)
+        self.assertIsInstance(model1.updated_at, datetime)
+        self.assertEqual(model.id, model1.id)
+        self.assertEqual(model.name, model1.name)
+        self.assertEqual(model.created_at, model1.created_at)
+        self.assertEqual(model.updated_at, model1.updated_at)
+        self.assertFalse(isinstance(getattr(model, "__class__", None), str))
+
+        model1 = BaseModel(
+            id=model_dict["id"], name="James",
+            created_at=model_dict["created_at"])
+        self.assertIsInstance(model1, BaseModel)
+        self.assertIsInstance(model1.id, str)
+        self.assertIsInstance(model1.created_at, datetime)
+        self.assertTrue(
+            isinstance(getattr(model1, "updated_at", None), datetime))
+        self.assertEqual(model.id, model1.id)
+        self.assertNotEqual(model.name, model1.name)
+        self.assertEqual(model.created_at, model1.created_at)
+        self.assertNotEqual(
+            getattr(model1, "updated_at", None), model.updated_at)
+
+        with self.assertRaises(ValueError) as ctx:
+            model1 = BaseModel(
+                id=model_dict["id"], name="James",
+                created_at=model_dict["created_at"],
+                updated_at="this is a bad date string")
+        self.assertRegex(
+            str(ctx.exception),
+            "Invalid isoformat string: 'this is a bad date string'")
 
     def test_save_instance_method(self):
         """ test the save instance method of the BaseModel class """
