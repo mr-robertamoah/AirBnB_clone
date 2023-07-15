@@ -8,6 +8,7 @@ which implements the cmd.Cmd class
 
 
 import cmd
+import json
 from models.base_model import BaseModel
 from models.user import User
 from models.state import State
@@ -56,11 +57,14 @@ class HBNBCommand(cmd.Cmd):
                     instance = objects[key]
                     value = getattr(instance, arguments[2], None)
                     if value is None:
-                        setattr(instance, arguments[2], arguments[3][1:-1])
+                        setattr(
+                            instance,
+                            arguments[2], arguments[3].replace('"', "")
+                        )
                     else:
                         value_type = type(getattr(instance, arguments[2]))
                         setattr(instance, arguments[2],
-                                value_type(arguments[3][1:-1]))
+                                value_type(arguments[3].replace('"', "")))
                     instance.save()
             else:
                 print("** no instance found **")
@@ -72,6 +76,67 @@ class HBNBCommand(cmd.Cmd):
               'Usage: update <class name> <id> <attribute name> '
               '"<attribute value>"\n')
 
+    def get_command(self, command):
+        """ reconstruct the command """
+
+        if command.find("(") + 1 == command.find(")"):
+            return "{}".format(command[:command.find(".")])
+
+        return "{} {}".format(
+            command[:command.find(".")],
+            command[command.find(
+                "(") + 1:-1].replace('"', '').replace(",", "")
+            )
+
+    def onecmd(self, command):
+        """ handle commands such as User.all(), User.show(), etc """
+
+        c = command.split(".")
+        if len(c) > 1:
+            func = command[command.index(".") + 1:command.index("(")]
+            if func == "all":
+                return self.do_all(command[:command.index(".")])
+            elif func == "show":
+                return self.do_show(self.get_command(command))
+            elif func == "destroy":
+                return self.do_destroy(self.get_command(command))
+            elif func == "update":
+                if command.find("{") >= 0:
+                    command_list = command[
+                        command.index("{") + 1:command.index("}")
+                    ].replace(":", "").split(" ")
+                    for i in range(0, len(command_list), 2):
+                        new_command = "{} {} {}".format(
+                            command[:command.index("{")]
+                            .replace('"', '')
+                            .replace(", ", "")
+                            .replace(".update(", " "),
+                            command_list[i].replace("'", "").replace('"', ""),
+                            command_list[i + 1]
+                            .replace(", ", "").replace(")", "")
+                        )
+                        self.do_update(self.get_command(new_command))
+                    return
+                else:
+                    return self.do_update(self.get_command(command))
+            elif func == "count":
+                print(len(self.get_objects(self.get_command(command))))
+                return
+        return super(HBNBCommand, self).onecmd(command)
+
+    def get_objects(self, arguments):
+        """ get the objects in storage """
+
+        objects = models.storage.all()
+        objects_list = []
+        for key, value in objects.items():
+            if arguments[0] == "":
+                objects_list.append(str(value))
+                continue
+            if arguments[0] == key[:len(arguments[0])]:
+                objects_list.append(str(value))
+        return objects_list
+
     def do_all(self, command):
         """ all command's implementation """
 
@@ -80,16 +145,7 @@ class HBNBCommand(cmd.Cmd):
         if arguments[0] != "" and arguments[0] not in self.class_names:
             print("** class doesn't exist **")
         else:
-            objects = models.storage.all()
-            objects_list = []
-            for key, value in objects.items():
-                if arguments[0] == "":
-                    objects_list.append(str(value))
-                    continue
-
-                if arguments[0] == key[:len(arguments[0])]:
-                    objects_list.append(str(value))
-            print(objects_list)
+            print(self.get_objects(arguments))
 
     def help_all(self):
         """ all command's help """
