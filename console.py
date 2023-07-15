@@ -57,11 +57,7 @@ def get_command(command):
 class HBNBCommand(cmd.Cmd):
     """ This is a commandline interpreter for the AirBnB clone """
 
-    def __init__(self):
-        """ initialize instance attributes """
-
-        super(HBNBCommand, self).__init__()
-        self.prompt = "(hbnb) "
+    prompt = "(hbnb) "
 
     def do_update(self, command):
         """ update command's implementation """
