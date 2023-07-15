@@ -69,13 +69,6 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print("** no instance found **")
 
-    def help_update(self):
-        """ update command's help """
-
-        print('Update command to add or update the attribute of an instance\n'
-              'Usage: update <class name> <id> <attribute name> '
-              '"<attribute value>"\n')
-
     def get_command(self, command):
         """ reconstruct the command """
 
@@ -147,12 +140,6 @@ class HBNBCommand(cmd.Cmd):
         else:
             print(self.get_objects(arguments))
 
-    def help_all(self):
-        """ all command's help """
-
-        print('All command to print a list of all objects\n'
-              'Usage: all | all <class name>\n')
-
     def do_destroy(self, command):
         """ destroy command's implementation """
 
@@ -175,12 +162,6 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print("** no instance found **")
 
-    def help_destroy(self):
-        """ destroy command's help """
-
-        print('Destroy command to delete object and remove from file\n'
-              'Usage: destroy <class name> <id>\n')
-
     def do_show(self, command):
         """ show command's implementation """
 
@@ -199,12 +180,6 @@ class HBNBCommand(cmd.Cmd):
                 print(objects[key])
             else:
                 print("** no instance found **")
-
-    def help_show(self):
-        """ show command's help """
-
-        print('Show command to display string representation of instance\n'
-              'Usage: show <class name> <id>\n')
 
     def do_create(self, command):
         """ create command's implementation """
@@ -231,12 +206,6 @@ class HBNBCommand(cmd.Cmd):
             instance.save()
             print(instance.id)
 
-    def help_create(self):
-        """ create command's help """
-
-        print('Create command to create an instance of class.\n'
-              'Usage: create <class name>\n')
-
     def do_quit(self, command):
         """ quit command's implementation """
 
@@ -257,8 +226,6 @@ class HBNBCommand(cmd.Cmd):
         """ implements what happens when an emptyline is used as command """
 
         pass
-
-    help_EOF = help_quit
 
 
 if __name__ == '__main__':
