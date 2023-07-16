@@ -27,6 +27,57 @@ class_names = [
 ]
 
 
+def update_instance(instance, attr, attr_value):
+    """ add or update attribute of instance """
+
+    value = getattr(instance, attr, None)
+    if value is None:
+        setattr(
+            instance,
+            attr, attr_value.replace('"', "")
+        )
+    else:
+        value_type = type(getattr(instance, attr))
+        setattr(instance, attr,
+                value_type(attr_value.replace('"', "")))
+
+
+def update_instance_with_dict(command):
+    """ add or update multiple attributes with dict """
+
+    command_list = command[
+        command.index("{") + 1:command.index("}")
+    ].replace(":", "").split(" ")
+    arguments = command[
+        :command.index("{")
+    ].replace('"', '').replace(", ", "").replace(".update(", " ").split(" ")
+    if len(arguments) == 0 or arguments[0] == "":
+        print("** class name missing **")
+    elif arguments[0] not in class_names:
+        print("** class doesn't exist **")
+    elif len(arguments) < 2:
+        print("** instance id missing **")
+    else:
+        objects = models.storage.all()
+        key = ".".join(arguments)
+        if key in objects.keys():
+            if len(command_list) == 0:
+                print("** attribute name missing **")
+            elif len(arguments) % 2 != 0:
+                print("** value missing **")
+            else:
+                instance = objects[key]
+                for i in range(0, len(command_list), 2):
+                    update_instance(
+                        instance,
+                        command_list[i].replace("'", "").replace('"', ""),
+                        command_list[i + 1]
+                    )
+                instance.save()
+        else:
+            print("** no instance found **")
+
+
 def get_objects(arguments):
     """ get the objects in storage """
 
@@ -80,16 +131,7 @@ class HBNBCommand(cmd.Cmd):
                     print("** value missing **")
                 else:
                     instance = objects[key]
-                    value = getattr(instance, arguments[2], None)
-                    if value is None:
-                        setattr(
-                            instance,
-                            arguments[2], arguments[3].replace('"', "")
-                        )
-                    else:
-                        value_type = type(getattr(instance, arguments[2]))
-                        setattr(instance, arguments[2],
-                                value_type(arguments[3].replace('"', "")))
+                    update_instance(instance, arguments[2], arguments[3])
                     instance.save()
             else:
                 print("** no instance found **")
@@ -108,20 +150,7 @@ class HBNBCommand(cmd.Cmd):
                 return self.do_destroy(get_command(command))
             elif func == "update":
                 if command.find("{") >= 0:
-                    command_list = command[
-                        command.index("{") + 1:command.index("}")
-                    ].replace(":", "").split(" ")
-                    for i in range(0, len(command_list), 2):
-                        new_command = "{} {} {}".format(
-                            command[:command.index("{")]
-                            .replace('"', '')
-                            .replace(", ", "")
-                            .replace(".update(", " "),
-                            command_list[i].replace("'", "").replace('"', ""),
-                            command_list[i + 1]
-                            .replace(", ", "").replace(")", "")
-                        )
-                        self.do_update(get_command(new_command))
+                    update_instance_with_dict(command)
                     return
                 else:
                     return self.do_update(get_command(command))
