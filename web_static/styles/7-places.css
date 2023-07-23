@@ -17,9 +17,11 @@
 
 .places article h2 {
 	font-size: 30px;
+	padding: 0;
+	margin: 0;
 }
 
-.places div {
+.places div:first-of-type {
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
